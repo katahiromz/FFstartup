@@ -103,23 +103,23 @@ INT FFSTARTUP::parse_cmdline(INT argc, LPWSTR *argv)
 
     std::wstring action = argv[1];
 
-    if (lstrcmpi(action.c_str(), TEXT("-help")) == 0 || lstrcmpi(action.c_str(), TEXT("--help")) == 0)
+    if (_wcsicmp(action.c_str(), L"-help") == 0 || _wcsicmp(action.c_str(), L"--help") == 0)
     {
         usage();
         return 1;
     }
 
-    if (lstrcmpi(action.c_str(), TEXT("-version")) == 0 || lstrcmpi(action.c_str(), TEXT("--version")) == 0)
+    if (_wcsicmp(action.c_str(), L"-version") == 0 || _wcsicmp(action.c_str(), L"--version") == 0)
     {
         version();
         return 1;
     }
 
-    if (lstrcmpi(action.c_str(), TEXT("-add")) == 0 || lstrcmpi(action.c_str(), TEXT("--add")) == 0)
+    if (_wcsicmp(action.c_str(), L"-add") == 0 || _wcsicmp(action.c_str(), L"--add") == 0)
     {
         m_add = true;
     }
-    else if (lstrcmpi(action.c_str(), TEXT("-remove")) == 0 || lstrcmpi(action.c_str(), TEXT("--remove")) == 0)
+    else if (_wcsicmp(action.c_str(), L"-remove") == 0 || _wcsicmp(action.c_str(), L"--remove") == 0)
     {
         m_remove = true;
     }
