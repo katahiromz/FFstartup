@@ -28,21 +28,21 @@ inline WORD get_lang_id(void)
     return PRIMARYLANGID(LANGIDFROMLCID(GetThreadLocale()));
 }
 
-LPCWSTR get_msg(INT id)
+LPCTSTR get_msg(INT id)
 {
     if (get_lang_id() == LANG_JAPANESE) // Japone for Japone
     {
         switch (id)
         {
         case 0:
-            return L"使用方法 #1: FFstartup -add エントリ名 コマンドライン...\n"
-                   L"使用方法 #2: FFstartup -remove エントリ名\n"
-                   L"使用方法 #3: FFstartup -help\n"
-                   L"使用方法 #4: FFstartup -version";
-        case 1: return L"エラー: アクションが未指定です。\n";
-        case 2: return L"エラー: エントリ名が未指定です。\n";
-        case 3: return L"エラー: レジストリキーを開くのに失敗しました。\n";
-        case 4: return L"エラー: レジストリの処理に失敗しました (エラー: %ld)\n";
+            return TEXT("使用方法 #1: FFstartup -add エントリ名 コマンドライン...\n")
+                   TEXT("使用方法 #2: FFstartup -remove エントリ名\n")
+                   TEXT("使用方法 #3: FFstartup -help\n")
+                   TEXT("使用方法 #4: FFstartup -version");
+        case 1: return TEXT("エラー: アクションが未指定です。\n");
+        case 2: return TEXT("エラー: エントリ名が未指定です。\n");
+        case 3: return TEXT("エラー: レジストリキーを開くのに失敗しました。\n");
+        case 4: return TEXT("エラー: レジストリの処理に失敗しました (エラー: %ld)\n");
         }
     }
     else // The others are Let's la English
@@ -50,14 +50,14 @@ LPCWSTR get_msg(INT id)
         switch (id)
         {
         case 0:
-            return L"Usage #1: FFstartup -add ENTRY_NAME CMDLINE...\n"
-                   L"Usage #2: FFstartup -remove ENTRY_NAME\n"
-                   L"Usage #3: FFstartup -help\n"
-                   L"Usage #4: FFstartup -version";
-        case 1: return L"ERROR: No action specified.\n";
-        case 2: return L"ERROR: No entry name specified.\n";
-        case 3: return L"ERROR: Failed to open registry key\n";
-        case 4: return L"ERROR: Registry operation is failed (error: %ld)\n";
+            return TEXT("Usage #1: FFstartup -add ENTRY_NAME CMDLINE...\n")
+                   TEXT("Usage #2: FFstartup -remove ENTRY_NAME\n")
+                   TEXT("Usage #3: FFstartup -help\n")
+                   TEXT("Usage #4: FFstartup -version");
+        case 1: return TEXT("ERROR: No action specified.\n");
+        case 2: return TEXT("ERROR: No entry name specified.\n");
+        case 3: return TEXT("ERROR: Failed to open registry key\n");
+        case 4: return TEXT("ERROR: Registry operation is failed (error: %ld)\n");
         }
     }
 
@@ -221,13 +221,12 @@ INT FFstartup_main(
     return ffstartup.run(hInstance, nCmdShow);
 }
 
-#include <fcntl.h> // for _setmode
-#include <io.h> // for _fileno
+#include <clocale>
 
 int main(void)
 {
     // Unicode console output support
-    _setmode(_fileno(stdout), _O_U16TEXT);
+    std::setlocale(LC_ALL, "");
 
     INT argc;
     LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
