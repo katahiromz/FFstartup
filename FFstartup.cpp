@@ -1,27 +1,73 @@
-// FFstartup.cpp
+﻿// FFstartup.cpp - Startup entry manipulator for Windows
 // License: MIT
+
+// Detect memory leaks (for Debug and MSVC)
+#if defined(_MSC_VER) && !defined(NDEBUG) && !defined(_CRTDBG_MAP_ALLOC)
+    #define _CRTDBG_MAP_ALLOC
+    #include <crtdbg.h>
+#endif
+
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
+#include <shlwapi.h>
 #include <tchar.h>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 #include <string>
 
 void version(void)
 {
-    std::puts("FFstartup version 0.0 by katahiromz");
+    _putws(L"FFstartup version 0.1 by katahiromz");
+}
+
+inline WORD get_lang_id(void)
+{
+    return PRIMARYLANGID(LANGIDFROMLCID(GetThreadLocale()));
+}
+
+LPCWSTR get_msg(INT id)
+{
+    if (get_lang_id() == LANG_JAPANESE) // Japone for Japone
+    {
+        switch (id)
+        {
+        case 0:
+            return L"使用方法 #1: FFstartup -add エントリ名 コマンドライン...\n"
+                   L"使用方法 #2: FFstartup -remove エントリ名\n"
+                   L"使用方法 #3: FFstartup -help\n"
+                   L"使用方法 #4: FFstartup -version";
+        case 1: return L"エラー: アクションが未指定です。\n";
+        case 2: return L"エラー: エントリ名が未指定です。\n";
+        case 3: return L"エラー: レジストリキーを開くのに失敗しました。\n";
+        case 4: return L"エラー: レジストリの処理に失敗しました (エラー: %ld)\n";
+        }
+    }
+    else // The others are Let's la English
+    {
+        switch (id)
+        {
+        case 0:
+            return L"Usage #1: FFstartup -add ENTRY_NAME CMDLINE...\n"
+                   L"Usage #2: FFstartup -remove ENTRY_NAME\n"
+                   L"Usage #3: FFstartup -help\n"
+                   L"Usage #4: FFstartup -version";
+        case 1: return L"ERROR: No action specified.\n";
+        case 2: return L"ERROR: No entry name specified.\n";
+        case 3: return L"ERROR: Failed to open registry key\n";
+        case 4: return L"ERROR: Registry operation is failed (error: %ld)\n";
+        }
+    }
+
+    assert(0);
+    return nullptr;
 }
 
 void usage(void)
 {
-    std::puts(
-        "Usage #1: FFstartup -add ENTRY_NAME CMDLINE...\n"
-        "Usage #2: FFstartup -remove ENTRY_NAME\n"
-        "Usage #3: FFstartup -help\n"
-        "Usage #4: FFstartup -version\n"
-    );
+    _putws(get_msg(0));
 }
 
 struct FFSTARTUP
@@ -44,7 +90,7 @@ struct FFSTARTUP
 
 INT FFSTARTUP::parse_cmdline(INT argc, LPWSTR *argv)
 {
-    if (argc <= 2)
+    if (argc <= 1)
     {
         usage();
         return 1;
@@ -75,14 +121,20 @@ INT FFSTARTUP::parse_cmdline(INT argc, LPWSTR *argv)
 
     if (!m_add && !m_remove)
     {
-        fprintf(stderr, "ERROR: No action specified.\n");
+        _ftprintf(stderr, get_msg(1));
+        return 1;
+    }
+
+    if (argc <= 2)
+    {
+        usage();
         return 1;
     }
 
     m_entry_name = argv[2];
     if (m_entry_name.empty())
     {
-        fprintf(stderr, "ERROR: No entry name specified.\n");
+        _ftprintf(stderr, get_msg(2));
         return 1;
     }
 
@@ -117,7 +169,7 @@ INT FFSTARTUP::set_startup(LPCTSTR regkey, LPCTSTR entry_name)
         RegCreateKeyEx(HKEY_CURRENT_USER, regkey, 0, NULL, 0, KEY_WRITE, NULL, &hKey, NULL);
         if (!hKey)
         {
-            fprintf(stderr, "ERROR: Failed to open registry key\n");
+            _ftprintf(stderr, get_msg(3));
             return 1;
         }
 
@@ -129,7 +181,7 @@ INT FFSTARTUP::set_startup(LPCTSTR regkey, LPCTSTR entry_name)
         RegOpenKeyEx(HKEY_CURRENT_USER, regkey, 0, KEY_WRITE, &hKey);
         if (!hKey)
         {
-            fprintf(stderr, "ERROR: Failed to open registry key\n");
+            _ftprintf(stderr, get_msg(3));
             return 1;
         }
 
@@ -137,6 +189,10 @@ INT FFSTARTUP::set_startup(LPCTSTR regkey, LPCTSTR entry_name)
     }
 
     RegCloseKey(hKey);
+
+    if (error)
+        _ftprintf(stderr, get_msg(4), error);
+
     return error ? 1 : 0;
 }
 
@@ -144,9 +200,8 @@ INT FFSTARTUP::set_startup(LPCTSTR regkey, LPCTSTR entry_name)
 
 INT FFSTARTUP::run(HINSTANCE hInstance, INT nCmdShow)
 {
-    if (LONG error = set_startup(REG_KEY_RUN, m_entry_name.c_str()))
+    if (set_startup(REG_KEY_RUN, m_entry_name.c_str()) == 0)
     {
-        fprintf(stderr, "ERROR: Registry operation is failed (error: %ld)\n", error);
         return 1;
     }
     return 0;
@@ -166,11 +221,32 @@ INT FFstartup_main(
     return ffstartup.run(hInstance, nCmdShow);
 }
 
+#include <fcntl.h> // for _setmode
+#include <io.h> // for _fileno
+
 int main(void)
 {
+    // Unicode console output support
+    _setmode(_fileno(stdout), _O_U16TEXT);
+
     INT argc;
     LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
     INT ret = FFstartup_main(GetModuleHandle(NULL), argc, argv, SW_SHOWNORMAL);
     LocalFree(argv);
+
+    // Detect handle leaks (for Debug)
+#if (_WIN32_WINNT >= 0x0500) && !defined(NDEBUG)
+    TCHAR szText[MAX_PATH];
+    wnsprintf(szText, _countof(szText), TEXT("GDI Objects: %ld, User Objects: %ld\n"),
+              GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS),
+              GetGuiResources(GetCurrentProcess(), GR_USEROBJECTS));
+    OutputDebugString(szText);
+#endif
+
+    // Detect memory leaks (for Debug and MSVC)
+#if defined(_MSC_VER) && !defined(NDEBUG)
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
     return ret;
 }
