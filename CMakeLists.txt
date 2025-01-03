@@ -17,6 +17,7 @@ option(JAPAN "Enable Japanese support" ON)
 if(JAPAN)
     add_definitions(-DJAPAN)
 endif()
+message(STATUS "JAPAN = ${JAPAN}")
 
 # FFstartup.exe
 add_executable(FFstartup FFstartup.cpp FFstartup_res.rc)
