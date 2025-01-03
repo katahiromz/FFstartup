@@ -2,7 +2,7 @@
 
 ## What's this?
 
-This is a command-line program to modify the startup entries for Windows.
+This is a command-line tool to modify the registry startup entries for Windows.
 
 ## Usage
 
