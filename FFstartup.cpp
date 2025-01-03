@@ -19,6 +19,8 @@ void usage(void)
     std::puts(
         "Usage #1: FFstartup -add ENTRY_NAME CMDLINE...\n"
         "Usage #2: FFstartup -remove ENTRY_NAME\n"
+        "Usage #3: FFstartup -help\n"
+        "Usage #4: FFstartup -version\n"
     );
 }
 
