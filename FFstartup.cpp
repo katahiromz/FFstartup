@@ -20,7 +20,7 @@
 
 void version(void)
 {
-    _putws(L"FFstartup version 0.1 by katahiromz");
+    _putts(TEXT("FFstartup version 0.2 by katahiromz"));
 }
 
 inline WORD get_lang_id(void)
@@ -28,6 +28,7 @@ inline WORD get_lang_id(void)
     return PRIMARYLANGID(LANGIDFROMLCID(GetThreadLocale()));
 }
 
+// localization
 LPCTSTR get_msg(INT id)
 {
     if (get_lang_id() == LANG_JAPANESE) // Japone for Japone
