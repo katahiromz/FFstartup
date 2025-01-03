@@ -18,23 +18,20 @@
 #include <cassert>
 #include <string>
 
-void version(void)
-{
-    _putts(TEXT("FFstartup version 0.2 by katahiromz"));
-}
-
 inline WORD get_lang_id(void)
 {
     return PRIMARYLANGID(LANGIDFROMLCID(GetThreadLocale()));
 }
 
 // localization
-LPCTSTR get_msg(INT id)
+LPCTSTR get_text(INT id)
 {
+#ifdef JAPAN
     if (get_lang_id() == LANG_JAPANESE) // Japone for Japone
     {
         switch (id)
         {
+        case -1: return TEXT("FFstartup バージョン 0.3 by 片山博文MZ");
         case 0:
             return TEXT("使用方法 #1: FFstartup -add エントリ名 コマンドライン...\n")
                    TEXT("使用方法 #2: FFstartup -remove エントリ名\n")
@@ -47,9 +44,11 @@ LPCTSTR get_msg(INT id)
         }
     }
     else // The others are Let's la English
+#endif
     {
         switch (id)
         {
+        case -1: return TEXT("FFstartup version 0.3 by katahiromz");
         case 0:
             return TEXT("Usage #1: FFstartup -add ENTRY_NAME CMDLINE...\n")
                    TEXT("Usage #2: FFstartup -remove ENTRY_NAME\n")
@@ -66,9 +65,14 @@ LPCTSTR get_msg(INT id)
     return nullptr;
 }
 
+void version(void)
+{
+    _putts(get_text(-1));
+}
+
 void usage(void)
 {
-    _putws(get_msg(0));
+    _putws(get_text(0));
 }
 
 struct FFSTARTUP
@@ -122,7 +126,7 @@ INT FFSTARTUP::parse_cmdline(INT argc, LPWSTR *argv)
 
     if (!m_add && !m_remove)
     {
-        _ftprintf(stderr, get_msg(1));
+        _ftprintf(stderr, get_text(1));
         return 1;
     }
 
@@ -135,7 +139,7 @@ INT FFSTARTUP::parse_cmdline(INT argc, LPWSTR *argv)
     m_entry_name = argv[2];
     if (m_entry_name.empty())
     {
-        _ftprintf(stderr, get_msg(2));
+        _ftprintf(stderr, get_text(2));
         return 1;
     }
 
@@ -170,7 +174,7 @@ INT FFSTARTUP::set_startup(LPCTSTR regkey, LPCTSTR entry_name)
         RegCreateKeyEx(HKEY_CURRENT_USER, regkey, 0, NULL, 0, KEY_WRITE, NULL, &hKey, NULL);
         if (!hKey)
         {
-            _ftprintf(stderr, get_msg(3));
+            _ftprintf(stderr, get_text(3));
             return 1;
         }
 
@@ -182,7 +186,7 @@ INT FFSTARTUP::set_startup(LPCTSTR regkey, LPCTSTR entry_name)
         RegOpenKeyEx(HKEY_CURRENT_USER, regkey, 0, KEY_WRITE, &hKey);
         if (!hKey)
         {
-            _ftprintf(stderr, get_msg(3));
+            _ftprintf(stderr, get_text(3));
             return 1;
         }
 
@@ -192,7 +196,7 @@ INT FFSTARTUP::set_startup(LPCTSTR regkey, LPCTSTR entry_name)
     RegCloseKey(hKey);
 
     if (error)
-        _ftprintf(stderr, get_msg(4), error);
+        _ftprintf(stderr, get_text(4), error);
 
     return error ? 1 : 0;
 }
