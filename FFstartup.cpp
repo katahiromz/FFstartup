@@ -31,7 +31,7 @@ LPCTSTR get_text(INT id)
     {
         switch (id)
         {
-        case -1: return TEXT("FFstartup バージョン 0.3 by 片山博文MZ");
+        case -1: return TEXT("FFstartup バージョン 0.4 by 片山博文MZ");
         case 0:
             return TEXT("使用方法 #1: FFstartup -add エントリ名 コマンドライン...\n")
                    TEXT("使用方法 #2: FFstartup -remove エントリ名\n")
@@ -48,7 +48,7 @@ LPCTSTR get_text(INT id)
     {
         switch (id)
         {
-        case -1: return TEXT("FFstartup version 0.3 by katahiromz");
+        case -1: return TEXT("FFstartup version 0.4 by katahiromz");
         case 0:
             return TEXT("Usage #1: FFstartup -add ENTRY_NAME CMDLINE...\n")
                    TEXT("Usage #2: FFstartup -remove ENTRY_NAME\n")
